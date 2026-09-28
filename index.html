@@ -52,6 +52,17 @@ input,select,textarea{width:100%;padding:12px;border:1px solid var(--line);borde
 textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
 .pdf-link{font-size:12px;font-weight:700;text-decoration:none;color:#365f9a}
 .note{font-size:12px;color:var(--muted);margin-top:6px}
+
+.sports-under-person{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.sport-panel{border:1px solid var(--line);border-radius:15px;padding:12px;background:#fff}
+.sport-panel .sport-head{display:flex;align-items:center;gap:8px;margin-bottom:9px;font-weight:800}
+.sport-panel.anna-primary{border-top:4px solid var(--anna)}
+.sport-panel.ale-primary{border-top:4px solid var(--ale)}
+.sport-panel.placeholder{border-style:dashed;display:none}
+@media(max-width:650px){
+  .sports-under-person{grid-template-columns:1fr}
+}
+
 @media(max-width:650px){.grid{grid-template-columns:1fr}.totalbox{grid-template-columns:1fr} h1{font-size:25px}.app{padding-top:12px}}
 </style>
 </head>
@@ -78,20 +89,34 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
 
   
   <div class="section-title"><h2>Questa settimana</h2></div>
+  
   <div class="grid">
     <div class="card">
       <div class="person-top">
-        <div><div class="name" style="font-size:18px">Anna</div><div class="sport">Ginnastica ritmica</div></div>
+        <div><div class="name" style="font-size:18px">Anna</div></div>
         <span class="dot anna"></span>
       </div>
-      <div class="list" id="weekAnna" style="margin-top:12px"></div>
+      <div class="sports-under-person">
+        <div class="sport-panel anna-primary">
+          <div class="sport-head"><span class="dot anna"></span>Ginnastica ritmica</div>
+          <div class="list" id="weekAnna"></div>
+        </div>
+        <!-- Qui potrà comparire un eventuale secondo sport di Anna, con un colore diverso -->
+      </div>
     </div>
+
     <div class="card">
       <div class="person-top">
-        <div><div class="name" style="font-size:18px">Aleksandro</div><div class="sport">Boxe</div></div>
+        <div><div class="name" style="font-size:18px">Aleksandro</div></div>
         <span class="dot ale"></span>
       </div>
-      <div class="list" id="weekAle" style="margin-top:12px"></div>
+      <div class="sports-under-person">
+        <div class="sport-panel ale-primary">
+          <div class="sport-head"><span class="dot ale"></span>Boxe</div>
+          <div class="list" id="weekAle"></div>
+        </div>
+        <!-- Qui potrà comparire un eventuale secondo sport di Aleksandro, con un colore diverso -->
+      </div>
     </div>
   </div>
 
@@ -177,8 +202,8 @@ function week(){
   ['Giovedì','16:00–17:30','Boxe'],
   ['Sabato','16:00–17:30','Boxe']
  ];
- document.getElementById('weekAnna').innerHTML=annaItems.map(x=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot anna"></span><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]} · ${x[2]}</div></div></div></div>`).join('');
- document.getElementById('weekAle').innerHTML=aleItems.map(x=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]} · ${x[2]}</div></div></div></div>`).join('');
+ document.getElementById('weekAnna').innerHTML=annaItems.map(x=>`<div class="row"><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]}</div></div></div>`).join('');
+ document.getElementById('weekAle').innerHTML=aleItems.map(x=>`<div class="row"><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]}</div></div></div>`).join('');
 }
 week();
 
