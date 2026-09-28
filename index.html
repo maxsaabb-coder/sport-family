@@ -37,7 +37,7 @@ button{font:inherit;border:0;cursor:pointer}
 .row-main{min-width:0}.row-title{font-weight:800}.row-meta{font-size:13px;color:var(--muted);margin-top:3px}
 .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}.dot.anna{background:var(--anna)}.dot.ale{background:var(--ale)}
 .money{font-weight:800;white-space:nowrap}
-nav{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);width:min(900px,calc(100% - 20px));display:grid;grid-template-columns:repeat(5,1fr);gap:5px;background:rgba(255,255,255,.96);backdrop-filter:blur(15px);border:1px solid var(--line);border-radius:18px;padding:7px;box-shadow:0 10px 35px rgba(28,39,66,.15)}
+nav{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);width:min(900px,calc(100% - 20px));display:grid;grid-template-columns:repeat(6,1fr);gap:5px;background:rgba(255,255,255,.96);backdrop-filter:blur(15px);border:1px solid var(--line);border-radius:18px;padding:7px;box-shadow:0 10px 35px rgba(28,39,66,.15)}
 nav button{background:transparent;padding:8px 2px;border-radius:12px;color:#737c8c;font-size:11px;font-weight:700}
 nav button.active{background:#edf1f8;color:#202938}.ico{font-size:19px;display:block;margin-bottom:3px}
 .view{display:none}.view.active{display:block}
@@ -119,14 +119,6 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
       </div>
     </div>
   </div>
-
-
-  <div class="section-title"><h2>Spese stagione</h2></div>
-  <div class="totalbox">
-    <div class="total"><span>Anna</span><b id="totalAnna">€ 0,00</b></div>
-    <div class="total"><span>Aleksandro</span><b id="totalAle">€ 0,00</b></div>
-    <div class="total"><span>Totale famiglia</span><b id="totalAll">€ 0,00</b></div>
-  </div>
 </section>
 
 <section id="training" class="view">
@@ -157,6 +149,22 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
   <div class="list" id="expenseList"></div>
 </section>
 
+
+<section id="season" class="view">
+  <div class="section-title"><h2>Spese stagione</h2></div>
+  <div class="totalbox">
+    <div class="total"><span>Anna</span><b id="totalAnna">€ 0,00</b></div>
+    <div class="total"><span>Aleksandro</span><b id="totalAle">€ 0,00</b></div>
+    <div class="total"><span>Totale famiglia</span><b id="totalAll">€ 0,00</b></div>
+  </div>
+  <div class="card" style="margin-top:14px">
+    <b>Riepilogo stagione 2026/27</b>
+    <div class="note" style="font-size:13px;line-height:1.55;margin-top:8px">
+      Somma delle quote segnate come <b>Pagato</b> e delle <b>spese extra</b> inserite per Anna e Aleksandro.
+    </div>
+  </div>
+</section>
+
 <section id="docs" class="view">
   <div class="section-title"><h2>Documenti e ricevute</h2><button class="btn small" onclick="openModal('document')">+ Aggiungi PDF</button></div>
   <div class="list" id="docList"></div>
@@ -169,6 +177,7 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
 <button onclick="go('training',this)"><span class="ico">📅</span>Sport</button>
 <button onclick="go('payments',this)"><span class="ico">💳</span>Quote</button>
 <button onclick="go('expenses',this)"><span class="ico">🧾</span>Extra</button>
+<button onclick="go('season',this)"><span class="ico">💶</span>Spese</button>
 <button onclick="go('docs',this)"><span class="ico">📁</span>PDF</button>
 </nav>
 
