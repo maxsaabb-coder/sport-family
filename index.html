@@ -76,8 +76,25 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
     </div>
   </div>
 
+  
   <div class="section-title"><h2>Questa settimana</h2></div>
-  <div class="list" id="weekList"></div>
+  <div class="grid">
+    <div class="card">
+      <div class="person-top">
+        <div><div class="name" style="font-size:18px">Anna</div><div class="sport">Ginnastica ritmica</div></div>
+        <span class="dot anna"></span>
+      </div>
+      <div class="list" id="weekAnna" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <div class="person-top">
+        <div><div class="name" style="font-size:18px">Aleksandro</div><div class="sport">Boxe</div></div>
+        <span class="dot ale"></span>
+      </div>
+      <div class="list" id="weekAle" style="margin-top:12px"></div>
+    </div>
+  </div>
+
 
   <div class="section-title"><h2>Spese stagione</h2></div>
   <div class="totalbox">
@@ -151,14 +168,17 @@ function go(id,btn){
  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
 }
 function week(){
- const items=[
-  ['Aleksandro','Martedì','16:00–17:30','Boxe','ale'],
-  ['Anna','Martedì','18:30–20:00','Ginnastica ritmica','anna'],
-  ['Aleksandro','Giovedì','16:00–17:30','Boxe','ale'],
-  ['Anna','Venerdì','18:30–20:00','Ginnastica ritmica','anna'],
-  ['Aleksandro','Sabato','16:00–17:30','Boxe','ale']
+ const annaItems=[
+  ['Martedì','18:30–20:00','Ginnastica ritmica'],
+  ['Venerdì','18:30–20:00','Ginnastica ritmica']
  ];
- document.getElementById('weekList').innerHTML=items.map(x=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot ${x[4]}"></span><div><div class="row-title">${x[0]} · ${x[1]}</div><div class="row-meta">${x[2]} · ${x[3]}</div></div></div></div>`).join('');
+ const aleItems=[
+  ['Martedì','16:00–17:30','Boxe'],
+  ['Giovedì','16:00–17:30','Boxe'],
+  ['Sabato','16:00–17:30','Boxe']
+ ];
+ document.getElementById('weekAnna').innerHTML=annaItems.map(x=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot anna"></span><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]} · ${x[2]}</div></div></div></div>`).join('');
+ document.getElementById('weekAle').innerHTML=aleItems.map(x=>`<div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]} · ${x[2]}</div></div></div></div>`).join('');
 }
 week();
 
