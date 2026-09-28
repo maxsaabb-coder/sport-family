@@ -132,14 +132,45 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
   </div>
 </section>
 
+
 <section id="payments" class="view">
-  <div class="section-title"><h2>Quote sportive</h2><button class="btn small" onclick="openModal('payment')">+ Aggiungi</button></div>
-  <div class="list" id="paymentList"></div>
+  <div class="section-title"><h2>Quote sportive</h2><button class="btn small" onclick="openModal('payment')">+ Aggiungi quota</button></div>
+
+  <div class="grid">
+    <div class="card person anna">
+      <div class="person-top">
+        <div>
+          <div class="name" style="font-size:19px">Anna</div>
+          <div class="sport">Quota annuale · A.s.d. SAN VITO TRIESTE</div>
+        </div>
+        <div style="font-size:26px">🤸‍♀️</div>
+      </div>
+      <div class="note" style="margin-top:10px">
+        Pagamento in un’unica soluzione entro agosto per ottenere lo sconto.
+      </div>
+      <div class="list" id="paymentListAnna" style="margin-top:12px"></div>
+    </div>
+
+    <div class="card person ale">
+      <div class="person-top">
+        <div>
+          <div class="name" style="font-size:19px">Aleksandro</div>
+          <div class="sport">Quota trimestrale · A.S.D. Club Sportivo Trieste Pugilato</div>
+        </div>
+        <div style="font-size:26px">🥊</div>
+      </div>
+      <div class="note" style="margin-top:10px">
+        Pagamento ogni tre mesi. Ogni periodo può avere la propria ricevuta PDF.
+      </div>
+      <div class="list" id="paymentListAle" style="margin-top:12px"></div>
+    </div>
+  </div>
+
   <div class="card" style="margin-top:14px">
-    <b>Regole impostate</b>
+    <b>Come funziona</b>
     <div class="note" style="font-size:13px;line-height:1.55;margin-top:8px">
-      <b>Anna:</b> quota annuale in unica soluzione entro agosto per ottenere lo sconto.<br>
-      <b>Aleksandro:</b> quota versata ogni tre mesi.
+      Premi <b>+ Aggiungi quota</b>, scegli Anna o Aleksandro, inserisci periodo/importo,
+      scadenza, stato e, se disponibile, allega la ricevuta PDF.
     </div>
   </div>
 </section>
@@ -228,11 +259,12 @@ function openModal(type){
  document.getElementById('modalTitle').textContent=title;
  let h='';
  if(type==='payment') h=`
-  <div class="field"><label>Descrizione quota</label><input id="desc" placeholder="Es. Quota annuale 2026/27"></div>
-  <div class="field"><label>Importo €</label><input id="amount" type="number" step="0.01"></div>
+  <div class="field"><label>Periodo / causale</label><input id="desc" placeholder="Es. Quota annuale 2026/27 oppure Set-Nov 2026"></div>
+  <div class="field"><label>Importo €</label><input id="amount" type="number" min="0" step="0.01" placeholder="0,00"></div>
   <div class="field"><label>Scadenza</label><input id="due" type="date"></div>
-  <div class="field"><label>Data pagamento</label><input id="paid" type="date"></div>
   <div class="field"><label>Stato</label><select id="status"><option>Da pagare</option><option>Pagato</option></select></div>
+  <div class="field"><label>Data pagamento</label><input id="paid" type="date"></div>
+  <div class="field"><label>Note (facoltative)</label><textarea id="paynote" placeholder="Es. sconto pagamento anticipato, bonifico, contanti..."></textarea></div>
   <div class="field"><label>Ricevuta PDF (facoltativa)</label><input id="file" type="file" accept="application/pdf"></div>`;
  if(type==='expense') h=`
   <div class="field"><label>Categoria</label><select id="category"><option>Gara / competizione</option><option>Trasferta</option><option>Iscrizione evento</option><option>Attrezzatura / abbigliamento</option><option>Visita / certificato</option><option>Stage / camp</option><option>Trasporto</option><option>Altro</option></select></div>
@@ -245,7 +277,22 @@ function openModal(type){
   <div class="field"><label>Titolo</label><input id="desc" placeholder="Es. Certificato medico 2026/27"></div>
   <div class="field"><label>PDF</label><input id="file" type="file" accept="application/pdf" required></div>`;
  document.getElementById('dynamicFields').innerHTML=h;
+ if(type==='payment'){
+   document.getElementById('person').onchange=suggestPaymentDescription;
+   suggestPaymentDescription();
+ }
 }
+
+function suggestPaymentDescription(){
+ if(window.modalType!=='payment') return;
+ const p=document.getElementById('person');
+ const d=document.getElementById('desc');
+ if(!p||!d||d.value.trim()) return;
+ d.placeholder = p.value==='Anna'
+   ? 'Es. Quota annuale 2026/27'
+   : 'Es. Settembre–Novembre 2026';
+}
+
 function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('form').reset();}
 
 async function storeDoc(person,category,title,file){
@@ -277,9 +324,33 @@ document.getElementById('form').addEventListener('submit',async e=>{
  closeModal(); renderAll();
 });
 function renderPayments(){
- const el=document.getElementById('paymentList');
- if(!payments.length){el.innerHTML='<div class="empty card">Nessun pagamento inserito.</div>';return;}
- el.innerHTML=payments.slice().reverse().map(p=>`<div class="row"><div><div class="row-title">${p.person} · ${p.desc}</div><div class="row-meta">${p.status}${p.due?' · scadenza '+new Date(p.due+'T12:00').toLocaleDateString('it-IT'):''}${p.paid?' · pagato '+new Date(p.paid+'T12:00').toLocaleDateString('it-IT'):''}</div></div><div class="money">${euro(p.amount)}</div></div>`).join('');
+ const annaEl=document.getElementById('paymentListAnna');
+ const aleEl=document.getElementById('paymentListAle');
+
+ const renderFor=(person,el)=>{
+   const rows=payments.filter(p=>p.person===person).slice().reverse();
+   if(!rows.length){
+     el.innerHTML='<div class="empty" style="padding:16px 6px">Nessuna quota inserita.</div>';
+     return;
+   }
+   el.innerHTML=rows.map(p=>{
+     const statusClass=p.status==='Pagato'?'ok':'warn';
+     const dueTxt=p.due?' · scad. '+new Date(p.due+'T12:00').toLocaleDateString('it-IT'):'';
+     const paidTxt=p.paid?' · pagato '+new Date(p.paid+'T12:00').toLocaleDateString('it-IT'):'';
+     const noteTxt=p.note?`<div class="note">${p.note}</div>`:'';
+     return `<div class="row">
+       <div class="row-main">
+         <div class="row-title">${p.desc}</div>
+         <div class="row-meta"><span class="pill ${statusClass}">${p.status}</span>${dueTxt}${paidTxt}</div>
+         ${noteTxt}
+       </div>
+       <div class="money">${€(p.amount)}</div>
+     </div>`;
+   }).join('');
+ };
+
+ renderFor('Anna',annaEl);
+ renderFor('Aleksandro',aleEl);
 }
 function renderExpenses(){
  const el=document.getElementById('expenseList');
