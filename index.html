@@ -95,6 +95,20 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
   </div>
 </div>
 
+<div id="recoveryScreen" class="login-screen hidden">
+  <div class="login-card">
+    <h1>Nuova password</h1>
+    <div class="subtitle">Scegli una nuova password per Sport Family</div>
+    <form id="recoveryForm">
+      <div class="field"><label>Nuova password</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div class="field"><label>Ripeti password</label><input id="newPassword2" type="password" minlength="8" autocomplete="new-password" required></div>
+      <button class="btn" id="recoveryBtn" type="submit" style="width:100%">Salva nuova password</button>
+      <div id="recoveryError" class="login-error"></div>
+    </form>
+  </div>
+</div>
+
+
 <div class="app hidden" id="mainApp">
 <header>
   <div><h1 id="appTitle">Sport Family</h1><div class="subtitle" id="appSubtitle">Anna & Aleksandro · stagione 2026/27</div></div>
@@ -286,12 +300,19 @@ week();
 
 function showLogin(message=''){
   byId('loginScreen').classList.remove('hidden');
+  byId('recoveryScreen').classList.add('hidden');
   byId('mainApp').classList.add('hidden');
   if(message){ byId('loginError').textContent=message; byId('loginError').style.display='block'; }
 }
 function showApp(){
   byId('loginScreen').classList.add('hidden');
+  byId('recoveryScreen').classList.add('hidden');
   byId('mainApp').classList.remove('hidden');
+}
+function showRecovery(){
+  byId('loginScreen').classList.add('hidden');
+  byId('mainApp').classList.add('hidden');
+  byId('recoveryScreen').classList.remove('hidden');
 }
 
 async function loadProfile(){
@@ -388,6 +409,39 @@ byId('loginForm').addEventListener('submit', async e=>{
     await sb.auth.signOut();
     showLogin('Profilo non configurato.');
   }
+});
+
+
+byId('recoveryForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const p1=byId('newPassword').value;
+  const p2=byId('newPassword2').value;
+  const err=byId('recoveryError');
+  err.style.display='none';
+  if(p1.length<8){
+    err.textContent='La password deve avere almeno 8 caratteri.';
+    err.style.display='block';
+    return;
+  }
+  if(p1!==p2){
+    err.textContent='Le due password non coincidono.';
+    err.style.display='block';
+    return;
+  }
+  byId('recoveryBtn').disabled=true;
+  byId('recoveryBtn').textContent='Salvataggio...';
+  const {error}=await sb.auth.updateUser({password:p1});
+  byId('recoveryBtn').disabled=false;
+  byId('recoveryBtn').textContent='Salva nuova password';
+  if(error){
+    err.textContent='Non è stato possibile aggiornare la password: '+error.message;
+    err.style.display='block';
+    return;
+  }
+  alert('Password aggiornata correttamente. Ora puoi accedere.');
+  await sb.auth.signOut();
+  history.replaceState({},document.title,location.pathname);
+  showLogin();
 });
 
 async function logout(){
@@ -555,7 +609,12 @@ async function renderAll(){
 }
 
 sb.auth.onAuthStateChange((event,session)=>{
- if(event==='SIGNED_OUT') showLogin();
+  if(event==='PASSWORD_RECOVERY'){
+    currentSession=session;
+    showRecovery();
+    return;
+  }
+  if(event==='SIGNED_OUT') showLogin();
 });
 
 init();
