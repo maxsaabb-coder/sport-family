@@ -115,6 +115,7 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
   <div class="user-tools">
     <div class="badge" id="accessBadge">🏅 Famiglia</div>
     <div class="user-name" id="userName"></div>
+    <button class="btn small secondary" id="passwordBtn" onclick="openPasswordModal()">Password</button>
     <button class="btn small secondary" id="logoutBtn" onclick="logout()">Esci</button>
   </div>
 </header>
@@ -257,6 +258,22 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
 <button class="admin-nav" onclick="go('season',this)"><span class="ico">💶</span>Spese</button>
 <button class="admin-nav" onclick="go('docs',this)"><span class="ico">📁</span>PDF</button>
 </nav>
+
+
+<div id="passwordModal" class="modal" onclick="if(event.target===this)closePasswordModal()">
+  <div class="sheet">
+    <h3>Cambia password</h3>
+    <form id="passwordForm">
+      <div class="field"><label>Nuova password</label><input id="accountPassword" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div class="field"><label>Ripeti nuova password</label><input id="accountPassword2" type="password" minlength="8" autocomplete="new-password" required></div>
+      <div id="passwordError" class="login-error"></div>
+      <div class="actions">
+        <button type="button" class="btn secondary" onclick="closePasswordModal()">Annulla</button>
+        <button id="passwordSaveBtn" class="btn" type="submit">Salva password</button>
+      </div>
+    </form>
+  </div>
+</div>
 
 <div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
 <div class="sheet">
@@ -442,6 +459,52 @@ byId('recoveryForm').addEventListener('submit', async e=>{
   await sb.auth.signOut();
   history.replaceState({},document.title,location.pathname);
   showLogin();
+});
+
+
+function openPasswordModal(){
+  byId('accountPassword').value='';
+  byId('accountPassword2').value='';
+  byId('passwordError').style.display='none';
+  byId('passwordModal').classList.add('show');
+}
+function closePasswordModal(){
+  byId('passwordModal').classList.remove('show');
+}
+byId('passwordForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  const p1=byId('accountPassword').value;
+  const p2=byId('accountPassword2').value;
+  const err=byId('passwordError');
+  err.style.display='none';
+
+  if(p1.length<8){
+    err.textContent='La password deve avere almeno 8 caratteri.';
+    err.style.display='block';
+    return;
+  }
+  if(p1!==p2){
+    err.textContent='Le due password non coincidono.';
+    err.style.display='block';
+    return;
+  }
+
+  byId('passwordSaveBtn').disabled=true;
+  byId('passwordSaveBtn').textContent='Salvataggio...';
+
+  const {error}=await sb.auth.updateUser({password:p1});
+
+  byId('passwordSaveBtn').disabled=false;
+  byId('passwordSaveBtn').textContent='Salva password';
+
+  if(error){
+    err.textContent='Errore: '+error.message;
+    err.style.display='block';
+    return;
+  }
+
+  closePasswordModal();
+  alert('Password aggiornata correttamente.');
 });
 
 async function logout(){
