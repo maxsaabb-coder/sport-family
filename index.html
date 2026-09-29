@@ -63,24 +63,56 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
   .sports-under-person{grid-template-columns:1fr}
 }
 
+
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;background:var(--bg)}
+.login-card{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+.login-card h1{margin-bottom:4px}.login-card .subtitle{margin-bottom:20px}
+.login-error{display:none;margin-top:12px;padding:10px 12px;border-radius:12px;background:#fdecef;color:#9b2635;font-size:13px}
+.user-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.user-name{font-size:12px;color:var(--muted);font-weight:700}
+.hidden{display:none!important}
+.child-mode .grid{grid-template-columns:1fr}
+.child-mode .status{display:none}
+nav.child-nav{grid-template-columns:repeat(2,1fr)}
+.loading{opacity:.55;pointer-events:none}
+.receipt-btn{margin-top:7px}
+
 @media(max-width:650px){.grid{grid-template-columns:1fr}.totalbox{grid-template-columns:1fr} h1{font-size:25px}.app{padding-top:12px}}
 </style>
 </head>
 <body>
-<div class="app">
+
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <h1>Sport Family</h1>
+    <div class="subtitle">Accesso personale</div>
+    <form id="loginForm">
+      <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+      <div class="field"><label>Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+      <button class="btn" id="loginBtn" type="submit" style="width:100%">Accedi</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<div class="app hidden" id="mainApp">
 <header>
-  <div><h1>Sport Family</h1><div class="subtitle">Anna & Aleksandro · stagione 2026/27</div></div>
-  <div class="badge">🏅 Famiglia</div>
+  <div><h1 id="appTitle">Sport Family</h1><div class="subtitle" id="appSubtitle">Anna & Aleksandro · stagione 2026/27</div></div>
+  <div class="user-tools">
+    <div class="badge" id="accessBadge">🏅 Famiglia</div>
+    <div class="user-name" id="userName"></div>
+    <button class="btn small secondary" id="logoutBtn" onclick="logout()">Esci</button>
+  </div>
 </header>
 
 <section id="home" class="view active">
   <div class="grid">
-    <div class="card person anna">
+    <div class="card person anna" data-person="Anna">
       <div class="person-top"><div><div class="name">Anna</div><div class="sport">Ginnastica ritmica</div></div><div style="font-size:32px">🤸‍♀️</div></div>
       <div class="next"><strong>Prossimo allenamento</strong><span id="nextAnna">Martedì · 18:30–20:00</span><div class="note">A.s.d. SAN VITO TRIESTE · Palazzetto Atleti Azzurri d’Italia</div></div>
       <div class="status"><span class="pill ok">Quota annuale</span><span class="pill">Pagamento entro agosto</span></div>
     </div>
-    <div class="card person ale">
+    <div class="card person ale" data-person="Aleksandro">
       <div class="person-top"><div><div class="name">Aleksandro</div><div class="sport">Boxe</div></div><div style="font-size:32px">🥊</div></div>
       <div class="next"><strong>Prossimo allenamento</strong><span id="nextAle">Martedì · 16:00–17:30</span><div class="note">A.S.D. Club Sportivo Trieste Pugilato · PalaChiarbola</div></div>
       <div class="status"><span class="pill warn">Quota trimestrale</span><span class="pill">3 mesi alla volta</span></div>
@@ -91,7 +123,7 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
   <div class="section-title"><h2>Questa settimana</h2></div>
   
   <div class="grid">
-    <div class="card">
+    <div class="card" data-person="Anna">
       <div class="person-top">
         <div><div class="name" style="font-size:18px">Anna</div></div>
         <span class="dot anna"></span>
@@ -105,7 +137,7 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" data-person="Aleksandro">
       <div class="person-top">
         <div><div class="name" style="font-size:18px">Aleksandro</div></div>
         <span class="dot ale"></span>
@@ -124,20 +156,20 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
 <section id="training" class="view">
   <div class="section-title"><h2>Allenamenti fissi</h2></div>
   <div class="list">
-    <div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot anna"></span><div class="row-main"><div class="row-title">Anna · Martedì</div><div class="row-meta">18:30–20:00 · Palazzetto Atleti Azzurri d’Italia</div><div class="note">Società: A.s.d. SAN VITO TRIESTE · sede: Via di Calvola 2/1, 34143 Trieste</div></div></div></div>
-    <div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot anna"></span><div class="row-main"><div class="row-title">Anna · Venerdì</div><div class="row-meta">18:30–20:00 · Palazzetto Atleti Azzurri d’Italia</div><div class="note">Società: A.s.d. SAN VITO TRIESTE · sede: Via di Calvola 2/1, 34143 Trieste</div></div></div></div>
-    <div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div class="row-main"><div class="row-title">Aleksandro · Martedì</div><div class="row-meta">16:00–17:30 · PalaChiarbola</div></div></div></div>
-    <div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div class="row-main"><div class="row-title">Aleksandro · Giovedì</div><div class="row-meta">16:00–17:30 · PalaChiarbola</div></div></div></div>
-    <div class="row"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div class="row-main"><div class="row-title">Aleksandro · Sabato</div><div class="row-meta">16:00–17:30 · PalaChiarbola</div></div></div></div>
+    <div class="row" data-person="Anna"><div style="display:flex;gap:10px;align-items:center"><span class="dot anna"></span><div class="row-main"><div class="row-title">Anna · Martedì</div><div class="row-meta">18:30–20:00 · Palazzetto Atleti Azzurri d’Italia</div><div class="note">Società: A.s.d. SAN VITO TRIESTE · sede: Via di Calvola 2/1, 34143 Trieste</div></div></div></div>
+    <div class="row" data-person="Anna"><div style="display:flex;gap:10px;align-items:center"><span class="dot anna"></span><div class="row-main"><div class="row-title">Anna · Venerdì</div><div class="row-meta">18:30–20:00 · Palazzetto Atleti Azzurri d’Italia</div><div class="note">Società: A.s.d. SAN VITO TRIESTE · sede: Via di Calvola 2/1, 34143 Trieste</div></div></div></div>
+    <div class="row" data-person="Aleksandro"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div class="row-main"><div class="row-title">Aleksandro · Martedì</div><div class="row-meta">16:00–17:30 · PalaChiarbola</div></div></div></div>
+    <div class="row" data-person="Aleksandro"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div class="row-main"><div class="row-title">Aleksandro · Giovedì</div><div class="row-meta">16:00–17:30 · PalaChiarbola</div></div></div></div>
+    <div class="row" data-person="Aleksandro"><div style="display:flex;gap:10px;align-items:center"><span class="dot ale"></span><div class="row-main"><div class="row-title">Aleksandro · Sabato</div><div class="row-meta">16:00–17:30 · PalaChiarbola</div></div></div></div>
   </div>
 </section>
 
 
 <section id="payments" class="view">
-  <div class="section-title"><h2>Quote sportive</h2><button class="btn small" onclick="openModal('payment')">+ Aggiungi quota</button></div>
+  <div class="section-title"><h2>Quote sportive</h2><button class="btn small admin-only" onclick="openModal('payment')">+ Aggiungi quota</button></div>
 
   <div class="grid">
-    <div class="card person anna">
+    <div class="card person anna" data-person="Anna">
       <div class="person-top">
         <div>
           <div class="name" style="font-size:19px">Anna</div>
@@ -151,7 +183,7 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
       <div class="list" id="paymentListAnna" style="margin-top:12px"></div>
     </div>
 
-    <div class="card person ale">
+    <div class="card person ale" data-person="Aleksandro">
       <div class="person-top">
         <div>
           <div class="name" style="font-size:19px">Aleksandro</div>
@@ -176,7 +208,7 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
 </section>
 
 <section id="expenses" class="view">
-  <div class="section-title"><h2>Spese extra</h2><button class="btn small" onclick="openModal('expense')">+ Aggiungi spesa</button></div>
+  <div class="section-title"><h2>Spese extra</h2><button class="btn small admin-only" onclick="openModal('expense')">+ Aggiungi spesa</button></div>
   <div class="list" id="expenseList"></div>
 </section>
 
@@ -197,19 +229,19 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
 </section>
 
 <section id="docs" class="view">
-  <div class="section-title"><h2>Documenti e ricevute</h2><button class="btn small" onclick="openModal('document')">+ Aggiungi PDF</button></div>
+  <div class="section-title"><h2>Documenti e ricevute</h2><button class="btn small admin-only" onclick="openModal('document')">+ Aggiungi PDF</button></div>
   <div class="list" id="docList"></div>
-  <div class="card" style="margin-top:14px"><div class="note">In questa prima versione i PDF vengono conservati nel browser del dispositivo tramite IndexedDB. Nella versione online li sposteremo su Supabase Storage.</div></div>
+  <div class="card" style="margin-top:14px"><div class="note">Le ricevute PDF sono archiviate nel bucket privato Supabase. Max può gestirle; gli accessi dei ragazzi restano in sola lettura.</div></div>
 </section>
 </div>
 
 <nav>
 <button class="active" onclick="go('home',this)"><span class="ico">🏠</span>Home</button>
 <button onclick="go('training',this)"><span class="ico">📅</span>Sport</button>
-<button onclick="go('payments',this)"><span class="ico">💳</span>Quote</button>
-<button onclick="go('expenses',this)"><span class="ico">🧾</span>Extra</button>
-<button onclick="go('season',this)"><span class="ico">💶</span>Spese</button>
-<button onclick="go('docs',this)"><span class="ico">📁</span>PDF</button>
+<button class="admin-nav" onclick="go('payments',this)"><span class="ico">💳</span>Quote</button>
+<button class="admin-nav" onclick="go('expenses',this)"><span class="ico">🧾</span>Extra</button>
+<button class="admin-nav" onclick="go('season',this)"><span class="ico">💶</span>Spese</button>
+<button class="admin-nav" onclick="go('docs',this)"><span class="ico">📁</span>PDF</button>
 </nav>
 
 <div id="modal" class="modal" onclick="if(event.target===this)closeModal()">
@@ -222,41 +254,160 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
 </form>
 </div></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+const SUPABASE_URL = 'https://nyalmnnwxsoutfpbjizs.supabase.co';
+const SUPABASE_KEY = 'sb_publishable__C9aFXg1dyzxqVx_lb0eDg_m-gKweDT';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const euro = n => new Intl.NumberFormat('it-IT',{style:'currency',currency:'EUR'}).format(Number(n||0));
-let payments = JSON.parse(localStorage.getItem('sf_payments')||'[]');
-let expenses = JSON.parse(localStorage.getItem('sf_expenses')||'[]');
+let payments = [];
+let expenses = [];
+let currentProfile = null;
+let currentSession = null;
+
+function byId(id){ return document.getElementById(id); }
+function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 
 function go(id,btn){
- document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
- document.getElementById(id).classList.add('active');
- document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  const target=byId(id); if(target) target.classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
 }
+
 function week(){
- const annaItems=[
-  ['Martedì','18:30–20:00','Ginnastica ritmica'],
-  ['Venerdì','18:30–20:00','Ginnastica ritmica']
- ];
- const aleItems=[
-  ['Martedì','16:00–17:30','Boxe'],
-  ['Giovedì','16:00–17:30','Boxe'],
-  ['Sabato','16:00–17:30','Boxe']
- ];
- document.getElementById('weekAnna').innerHTML=annaItems.map(x=>`<div class="row"><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]}</div></div></div>`).join('');
- document.getElementById('weekAle').innerHTML=aleItems.map(x=>`<div class="row"><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]}</div></div></div>`).join('');
+ const annaItems=[['Martedì','18:30–20:00'],['Venerdì','18:30–20:00']];
+ const aleItems=[['Martedì','16:00–17:30'],['Giovedì','16:00–17:30'],['Sabato','16:00–17:30']];
+ byId('weekAnna').innerHTML=annaItems.map(x=>`<div class="row"><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]}</div></div></div>`).join('');
+ byId('weekAle').innerHTML=aleItems.map(x=>`<div class="row"><div><div class="row-title">${x[0]}</div><div class="row-meta">${x[1]}</div></div></div>`).join('');
 }
 week();
 
-let db;
-const req=indexedDB.open('sportFamilyDB',1);
-req.onupgradeneeded=e=>{db=e.target.result; if(!db.objectStoreNames.contains('docs')) db.createObjectStore('docs',{keyPath:'id',autoIncrement:true});};
-req.onsuccess=e=>{db=e.target.result; renderDocs();};
+function showLogin(message=''){
+  byId('loginScreen').classList.remove('hidden');
+  byId('mainApp').classList.add('hidden');
+  if(message){ byId('loginError').textContent=message; byId('loginError').style.display='block'; }
+}
+function showApp(){
+  byId('loginScreen').classList.add('hidden');
+  byId('mainApp').classList.remove('hidden');
+}
+
+async function loadProfile(){
+  const user=currentSession?.user;
+  if(!user) return null;
+  const {data,error}=await sb.from('profili').select('nome,ruolo,ragazzo').eq('user_id',user.id).single();
+  if(error) throw error;
+  return data;
+}
+
+function applyRoleUI(){
+  const isAdmin=currentProfile?.ruolo==='admin';
+  const child=currentProfile?.ragazzo || null;
+  document.body.classList.toggle('child-mode',!isAdmin);
+  document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
+  document.querySelectorAll('.admin-nav').forEach(el=>el.classList.toggle('hidden',!isAdmin));
+  document.querySelector('nav').classList.toggle('child-nav',!isAdmin);
+
+  if(isAdmin){
+    byId('appTitle').textContent='Sport Family';
+    byId('appSubtitle').textContent='Anna & Aleksandro · stagione 2026/27';
+    byId('accessBadge').textContent='🏅 Famiglia';
+  } else {
+    byId('appTitle').textContent='Sport '+child;
+    byId('appSubtitle').textContent=(child==='Anna'?'Ginnastica ritmica':'Boxe')+' · stagione 2026/27';
+    byId('accessBadge').textContent='🔒 Sola lettura';
+  }
+  byId('userName').textContent=currentProfile?.nome || '';
+
+  document.querySelectorAll('[data-person]').forEach(el=>{
+    el.classList.toggle('hidden', !isAdmin && el.dataset.person!==child);
+  });
+
+  if(!isAdmin){
+    go('home',document.querySelector('nav button'));
+  }
+}
+
+async function loadData(){
+  const [pRes,eRes]=await Promise.all([
+    sb.from('pagamenti').select('*').order('created_at',{ascending:false}),
+    sb.from('spese_extra').select('*').order('created_at',{ascending:false})
+  ]);
+  if(pRes.error) throw pRes.error;
+  if(eRes.error) throw eRes.error;
+
+  payments=(pRes.data||[]).map(p=>({
+    id:p.id, person:p.ragazzo, desc:p.causale, amount:p.importo,
+    due:p.scadenza, status:p.stato, paid:p.data_pagamento,
+    note:p.note||'', receipt:p.ricevuta_url||''
+  }));
+  expenses=(eRes.data||[]).map(x=>({
+    id:x.id, person:x.ragazzo, category:x.categoria, desc:x.descrizione,
+    amount:x.importo, date:x.data_spesa, receipt:x.ricevuta_url||''
+  }));
+  await renderAll();
+}
+
+async function init(){
+  const {data:{session}}=await sb.auth.getSession();
+  if(!session){ showLogin(); return; }
+  currentSession=session;
+  try{
+    currentProfile=await loadProfile();
+    applyRoleUI();
+    showApp();
+    await loadData();
+  }catch(err){
+    console.error(err);
+    await sb.auth.signOut();
+    showLogin('Profilo non configurato o accesso non autorizzato.');
+  }
+}
+
+byId('loginForm').addEventListener('submit', async e=>{
+  e.preventDefault();
+  byId('loginError').style.display='none';
+  byId('loginBtn').disabled=true;
+  byId('loginBtn').textContent='Accesso...';
+  const email=byId('loginEmail').value.trim();
+  const password=byId('loginPassword').value;
+  const {data,error}=await sb.auth.signInWithPassword({email,password});
+  byId('loginBtn').disabled=false;
+  byId('loginBtn').textContent='Accedi';
+  if(error){ byId('loginError').textContent='Email o password non corretti.'; byId('loginError').style.display='block'; return; }
+  currentSession=data.session;
+  try{
+    currentProfile=await loadProfile();
+    applyRoleUI();
+    showApp();
+    await loadData();
+  }catch(err){
+    console.error(err);
+    await sb.auth.signOut();
+    showLogin('Profilo non configurato.');
+  }
+});
+
+async function logout(){
+  await sb.auth.signOut();
+  currentSession=null; currentProfile=null; payments=[]; expenses=[];
+  showLogin();
+}
+
+function suggestPaymentDescription(){
+ if(window.modalType!=='payment') return;
+ const p=byId('person'), d=byId('desc');
+ if(!p||!d||d.value.trim()) return;
+ d.placeholder=p.value==='Anna'?'Es. Quota annuale 2026/27':'Es. Settembre–Novembre 2026';
+}
 
 function openModal(type){
+ if(currentProfile?.ruolo!=='admin') return;
  window.modalType=type;
- document.getElementById('modal').classList.add('show');
- const title={payment:'Aggiungi pagamento',expense:'Aggiungi spesa extra',document:'Aggiungi documento PDF'}[type];
- document.getElementById('modalTitle').textContent=title;
+ byId('modal').classList.add('show');
+ byId('modalTitle').textContent={payment:'Aggiungi pagamento',expense:'Aggiungi spesa extra',document:'Aggiungi PDF'}[type];
  let h='';
  if(type==='payment') h=`
   <div class="field"><label>Periodo / causale</label><input id="desc" placeholder="Es. Quota annuale 2026/27 oppure Set-Nov 2026"></div>
@@ -276,108 +427,138 @@ function openModal(type){
   <div class="field"><label>Tipo documento</label><select id="category"><option>Ricevuta</option><option>Certificato medico</option><option>Iscrizione</option><option>Assicurazione</option><option>Gara / evento</option><option>Altro</option></select></div>
   <div class="field"><label>Titolo</label><input id="desc" placeholder="Es. Certificato medico 2026/27"></div>
   <div class="field"><label>PDF</label><input id="file" type="file" accept="application/pdf" required></div>`;
- document.getElementById('dynamicFields').innerHTML=h;
- if(type==='payment'){
-   document.getElementById('person').onchange=suggestPaymentDescription;
-   suggestPaymentDescription();
- }
+ byId('dynamicFields').innerHTML=h;
+ if(type==='payment'){ byId('person').onchange=suggestPaymentDescription; suggestPaymentDescription(); }
+}
+function closeModal(){ byId('modal').classList.remove('show'); byId('form').reset(); }
+
+function safeName(name){
+ return String(name||'documento.pdf').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'_');
+}
+async function uploadReceipt(file,person,label='documento'){
+ if(!file) return '';
+ const path=`${person}/${Date.now()}_${safeName(label)}_${safeName(file.name)}`;
+ const {error}=await sb.storage.from('ricevute').upload(path,file,{upsert:false,contentType:'application/pdf'});
+ if(error) throw error;
+ return path;
 }
 
-function suggestPaymentDescription(){
- if(window.modalType!=='payment') return;
- const p=document.getElementById('person');
- const d=document.getElementById('desc');
- if(!p||!d||d.value.trim()) return;
- d.placeholder = p.value==='Anna'
-   ? 'Es. Quota annuale 2026/27'
-   : 'Es. Settembre–Novembre 2026';
-}
-
-function closeModal(){document.getElementById('modal').classList.remove('show');document.getElementById('form').reset();}
-
-async function storeDoc(person,category,title,file){
- if(!file || !db) return null;
- return new Promise(resolve=>{
-  const tx=db.transaction('docs','readwrite');
-  const r=tx.objectStore('docs').add({person,category,title,name:file.name,blob:file,created:new Date().toISOString()});
-  r.onsuccess=()=>resolve(r.result);
- });
-}
-document.getElementById('form').addEventListener('submit',async e=>{
+byId('form').addEventListener('submit',async e=>{
  e.preventDefault();
- const person=document.getElementById('person').value;
- const type=window.modalType;
- if(type==='payment'){
-  const p={id:Date.now(),person,desc:document.getElementById('desc').value||'Quota sportiva',amount:document.getElementById('amount').value||0,due:document.getElementById('due').value,paid:document.getElementById('paid').value,status:document.getElementById('status').value,note:(document.getElementById('paynote')?.value||'')};
-  payments.push(p); localStorage.setItem('sf_payments',JSON.stringify(payments));
-  const f=document.getElementById('file').files[0]; if(f) await storeDoc(person,'Ricevuta',p.desc,f);
- }
- if(type==='expense'){
-  const categoryEl=document.getElementById('category');
-  const ex={id:Date.now(),person,category:categoryEl.value,desc:document.getElementById('desc').value||categoryEl.value,amount:document.getElementById('amount').value||0,date:document.getElementById('date').value};
-  expenses.push(ex); localStorage.setItem('sf_expenses',JSON.stringify(expenses));
-  const f=document.getElementById('file').files[0]; if(f) await storeDoc(person,'Ricevuta spesa extra',ex.desc,f);
- }
- if(type==='document'){
-  const f=document.getElementById('file').files[0]; const categoryEl=document.getElementById('category'); const descEl=document.getElementById('desc'); await storeDoc(person,categoryEl.value,descEl.value||f.name,f);
- }
- closeModal(); renderAll();
-});
-function renderPayments(){
- const annaEl=document.getElementById('paymentListAnna');
- const aleEl=document.getElementById('paymentListAle');
-
- const renderFor=(person,el)=>{
-   const rows=payments.filter(p=>p.person===person).slice().reverse();
-   if(!rows.length){
-     el.innerHTML='<div class="empty" style="padding:16px 6px">Nessuna quota inserita.</div>';
-     return;
+ if(currentProfile?.ruolo!=='admin') return;
+ const submit=e.submitter; if(submit){submit.disabled=true;submit.textContent='Salvataggio...';}
+ try{
+   const person=byId('person').value, type=window.modalType;
+   if(type==='payment'){
+     const file=byId('file').files[0];
+     const receipt=await uploadReceipt(file,person,byId('desc').value||'quota');
+     const row={
+       ragazzo:person,
+       causale:byId('desc').value||'Quota sportiva',
+       importo:Number(byId('amount').value||0),
+       scadenza:byId('due').value||null,
+       stato:byId('status').value,
+       data_pagamento:byId('paid').value||null,
+       note:byId('paynote').value||null,
+       ricevuta_url:receipt||null
+     };
+     const {error}=await sb.from('pagamenti').insert(row); if(error) throw error;
    }
+   if(type==='expense'){
+     const file=byId('file').files[0];
+     const receipt=await uploadReceipt(file,person,byId('desc').value||'spesa');
+     const row={
+       ragazzo:person,
+       categoria:byId('category').value,
+       descrizione:byId('desc').value||byId('category').value,
+       importo:Number(byId('amount').value||0),
+       data_spesa:byId('date').value||null,
+       ricevuta_url:receipt||null
+     };
+     const {error}=await sb.from('spese_extra').insert(row); if(error) throw error;
+   }
+   if(type==='document'){
+     const file=byId('file').files[0];
+     const label=(byId('category').value+'_'+(byId('desc').value||file.name));
+     await uploadReceipt(file,person,label);
+   }
+   closeModal();
+   await loadData();
+ }catch(err){
+   console.error(err); alert('Errore durante il salvataggio: '+(err.message||err));
+ }finally{
+   if(submit){submit.disabled=false;submit.textContent='Salva';}
+ }
+});
+
+async function openReceipt(path){
+ const {data,error}=await sb.storage.from('ricevute').createSignedUrl(path,120);
+ if(error){ alert('Non riesco ad aprire il PDF.'); return; }
+ window.open(data.signedUrl,'_blank','noopener');
+}
+
+function receiptButton(path){
+ return path?`<button class="btn small secondary receipt-btn" onclick="openReceipt('${esc(path)}')">📄 Ricevuta</button>`:'';
+}
+
+function renderPayments(){
+ const annaEl=byId('paymentListAnna'), aleEl=byId('paymentListAle');
+ const renderFor=(person,el)=>{
+   const rows=payments.filter(p=>p.person===person);
+   if(!rows.length){ el.innerHTML='<div class="empty" style="padding:16px 6px">Nessuna quota inserita.</div>'; return; }
    el.innerHTML=rows.map(p=>{
      const statusClass=p.status==='Pagato'?'ok':'warn';
      const dueTxt=p.due?' · scad. '+new Date(p.due+'T12:00').toLocaleDateString('it-IT'):'';
      const paidTxt=p.paid?' · pagato '+new Date(p.paid+'T12:00').toLocaleDateString('it-IT'):'';
-     const noteTxt=p.note?`<div class="note">${p.note}</div>`:'';
-     return `<div class="row">
-       <div class="row-main">
-         <div class="row-title">${p.desc}</div>
-         <div class="row-meta"><span class="pill ${statusClass}">${p.status}</span>${dueTxt}${paidTxt}</div>
-         ${noteTxt}
-       </div>
-       <div class="money">${euro(p.amount)}</div>
-     </div>`;
+     const noteTxt=p.note?`<div class="note">${esc(p.note)}</div>`:'';
+     return `<div class="row"><div class="row-main"><div class="row-title">${esc(p.desc)}</div>
+       <div class="row-meta"><span class="pill ${statusClass}">${esc(p.status)}</span>${dueTxt}${paidTxt}</div>
+       ${noteTxt}${receiptButton(p.receipt)}</div><div class="money">${euro(p.amount)}</div></div>`;
    }).join('');
  };
+ renderFor('Anna',annaEl); renderFor('Aleksandro',aleEl);
+}
 
- renderFor('Anna',annaEl);
- renderFor('Aleksandro',aleEl);
-}
 function renderExpenses(){
- const el=document.getElementById('expenseList');
+ const el=byId('expenseList');
  if(!expenses.length){el.innerHTML='<div class="empty card">Nessuna spesa extra inserita.</div>';return;}
- el.innerHTML=expenses.slice().reverse().map(x=>`<div class="row"><div><div class="row-title">${x.person} · ${x.desc}</div><div class="row-meta">${x.category}${x.date?' · '+new Date(x.date+'T12:00').toLocaleDateString('it-IT'):''}</div></div><div class="money">${euro(x.amount)}</div></div>`).join('');
+ el.innerHTML=expenses.map(x=>`<div class="row"><div><div class="row-title">${esc(x.person)} · ${esc(x.desc)}</div>
+ <div class="row-meta">${esc(x.category)}${x.date?' · '+new Date(x.date+'T12:00').toLocaleDateString('it-IT'):''}</div>
+ ${receiptButton(x.receipt)}</div><div class="money">${euro(x.amount)}</div></div>`).join('');
 }
+
 function renderTotals(){
  const all=[...payments.filter(p=>p.status==='Pagato'),...expenses];
  const sum=p=>all.filter(x=>x.person===p).reduce((a,x)=>a+Number(x.amount||0),0);
  const a=sum('Anna'),b=sum('Aleksandro');
- document.getElementById("totalAnna").textContent=euro(a);document.getElementById("totalAle").textContent=euro(b);document.getElementById("totalAll").textContent=euro(a+b);
+ byId("totalAnna").textContent=euro(a);byId("totalAle").textContent=euro(b);byId("totalAll").textContent=euro(a+b);
 }
-function renderDocs(){
- if(!db) return;
- const tx=db.transaction('docs','readonly'); const r=tx.objectStore('docs').getAll();
- r.onsuccess=()=>{
-  const docs=r.result.reverse(), el=document.getElementById('docList');
-  if(!docs.length){el.innerHTML='<div class="empty card">Nessun PDF archiviato.</div>';return;}
-  el.innerHTML=docs.map(d=>`<div class="row"><div><div class="row-title">${d.person} · ${d.title}</div><div class="row-meta">${d.category} · ${d.name}</div></div><button class="btn small secondary" onclick="openDoc(${d.id})">Apri PDF</button></div>`).join('');
- };
+
+async function listFolder(person){
+ const {data,error}=await sb.storage.from('ricevute').list(person,{limit:100,sortBy:{column:'created_at',order:'desc'}});
+ if(error) return [];
+ return (data||[]).filter(f=>f.name && f.name!=='.emptyFolderPlaceholder').map(f=>({person,name:f.name,path:`${person}/${f.name}`}));
 }
-function openDoc(id){
- const tx=db.transaction('docs','readonly'); const r=tx.objectStore('docs').get(id);
- r.onsuccess=()=>{const u=URL.createObjectURL(r.result.blob); window.open(u,'_blank'); setTimeout(()=>URL.revokeObjectURL(u),60000);};
+async function renderDocs(){
+ const el=byId('docList');
+ if(!el) return;
+ const people=currentProfile?.ruolo==='admin'?['Anna','Aleksandro']:[currentProfile?.ragazzo].filter(Boolean);
+ const groups=await Promise.all(people.map(listFolder));
+ const docs=groups.flat();
+ if(!docs.length){el.innerHTML='<div class="empty card">Nessun PDF archiviato.</div>';return;}
+ el.innerHTML=docs.map(d=>`<div class="row"><div><div class="row-title">${esc(d.person)} · ${esc(d.name)}</div>
+ <div class="row-meta">Supabase Storage</div></div><button class="btn small secondary" onclick="openReceipt('${esc(d.path)}')">Apri PDF</button></div>`).join('');
 }
-function renderAll(){renderPayments();renderExpenses();renderTotals();renderDocs();}
-renderAll();
+
+async function renderAll(){
+ renderPayments(); renderExpenses(); renderTotals(); await renderDocs();
+}
+
+sb.auth.onAuthStateChange((event,session)=>{
+ if(event==='SIGNED_OUT') showLogin();
+});
+
+init();
 </script>
 </body>
 </html>
