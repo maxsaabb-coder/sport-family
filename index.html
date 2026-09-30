@@ -81,6 +81,7 @@ textarea{min-height:80px;resize:vertical}.actions{display:flex;gap:8px;justify-c
 .user-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .user-name{font-size:12px;color:var(--muted);font-weight:700}
 .hidden{display:none!important}
+body.login-mode nav{display:none!important}
 .child-mode .grid{grid-template-columns:1fr}
 .child-mode .status{display:none}
 nav.child-nav{grid-template-columns:repeat(2,1fr)}
@@ -90,15 +91,15 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
 @media(max-width:650px){.grid{grid-template-columns:1fr}.totalbox{grid-template-columns:1fr} h1{font-size:25px}.app{padding-top:12px}}
 </style>
 </head>
-<body>
+<body class="login-mode">
 
 <div id="loginScreen" class="login-screen">
   <div class="login-card">
     <h1>Sport Family</h1>
     <div class="subtitle">Accesso personale</div>
-    <form id="loginForm">
-      <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
-      <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="current-password" required><button type="button" class="password-toggle" onclick="togglePassword('loginPassword',this)" aria-label="Mostra password" title="Mostra password">👁️</button></div></div>
+    <form id="loginForm" autocomplete="off">
+      <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" required></div>
+      <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="new-password" required><button type="button" class="password-toggle" onclick="togglePassword('loginPassword',this)" aria-label="Mostra password" title="Mostra password">👁️</button></div></div>
       <button class="btn" id="loginBtn" type="submit" style="width:100%">Accedi</button>
       <div id="loginError" class="login-error"></div>
     </form>
@@ -260,7 +261,7 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
 </section>
 </div>
 
-<nav>
+<nav class="hidden">
 <button class="active" onclick="go('home',this)"><span class="ico">🏠</span>Home</button>
 <button onclick="go('training',this)"><span class="ico">📅</span>Sport</button>
 <button class="admin-nav" onclick="go('payments',this)"><span class="ico">💳</span>Quote</button>
@@ -336,18 +337,63 @@ function week(){
 }
 week();
 
+function clearLoginFields(){
+  const email=byId('loginEmail');
+  const password=byId('loginPassword');
+
+  if(email){
+    email.value='';
+    email.setAttribute('value','');
+  }
+  if(password){
+    password.value='';
+    password.setAttribute('value','');
+    password.type='password';
+  }
+
+  const loginEye=document.querySelector(".password-toggle[onclick*='loginPassword']");
+  if(loginEye){
+    loginEye.textContent='👁️';
+    loginEye.setAttribute('aria-label','Mostra password');
+    loginEye.title='Mostra password';
+  }
+}
+
 function showLogin(message=''){
+  document.body.classList.add('login-mode');
+
+  const nav=document.querySelector('nav');
+  if(nav) nav.classList.add('hidden');
+
   byId('loginScreen').classList.remove('hidden');
   byId('recoveryScreen').classList.add('hidden');
   byId('mainApp').classList.add('hidden');
-  if(message){ byId('loginError').textContent=message; byId('loginError').style.display='block'; }
+
+  clearLoginFields();
+  setTimeout(clearLoginFields,50);
+  setTimeout(clearLoginFields,250);
+  setTimeout(clearLoginFields,700);
+
+  byId('loginError').style.display='none';
+  byId('loginError').textContent='';
+
+  if(message){
+    byId('loginError').textContent=message;
+    byId('loginError').style.display='block';
+  }
 }
 function showApp(){
+  document.body.classList.remove('login-mode');
+
+  const nav=document.querySelector('nav');
+  if(nav) nav.classList.remove('hidden');
+
   byId('loginScreen').classList.add('hidden');
   byId('recoveryScreen').classList.add('hidden');
   byId('mainApp').classList.remove('hidden');
 }
 function showRecovery(){
+  document.body.classList.add('login-mode');
   byId('loginScreen').classList.add('hidden');
   byId('mainApp').classList.add('hidden');
   byId('recoveryScreen').classList.remove('hidden');
@@ -529,9 +575,22 @@ byId('passwordForm').addEventListener('submit', async e=>{
 });
 
 async function logout(){
-  await sb.auth.signOut();
-  currentSession=null; currentProfile=null; payments=[]; expenses=[];
-  showLogin();
+  try{
+    await sb.auth.signOut({scope:'local'});
+  }catch(err){
+    console.error(err);
+  }finally{
+    currentSession=null;
+    currentProfile=null;
+    payments=[];
+    expenses=[];
+
+    const form=byId('loginForm');
+    if(form) form.reset();
+
+    clearLoginFields();
+    showLogin();
+  }
 }
 
 function suggestPaymentDescription(){
