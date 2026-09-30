@@ -97,12 +97,12 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
   <div class="login-card">
     <h1>Sport Family</h1>
     <div class="subtitle">Accesso personale</div>
-    <form id="loginForm" autocomplete="off">
-      <div class="field"><label>Email</label><input id="loginEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false" required></div>
-      <div class="field"><label>Password</label><div class="password-wrap"><input id="loginPassword" type="password" autocomplete="new-password" required><button type="button" class="password-toggle" onclick="togglePassword('loginPassword',this)" aria-label="Mostra password" title="Mostra password">👁️</button></div></div>
-      <button class="btn" id="loginBtn" type="submit" style="width:100%">Accedi</button>
-      <div id="loginError" class="login-error"></div>
-    </form>
+    
+<form id="loginForm" autocomplete="off">
+  <div id="loginFields"></div>
+  <button class="btn" id="loginBtn" type="submit" style="width:100%">Accedi</button>
+  <div id="loginError" class="login-error"></div>
+</form>
   </div>
 </div>
 
@@ -261,7 +261,7 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
 </section>
 </div>
 
-<nav class="hidden">
+<nav class="hidden" style="display:none">
 <button class="active" onclick="go('home',this)"><span class="ico">🏠</span>Home</button>
 <button onclick="go('training',this)"><span class="ico">📅</span>Sport</button>
 <button class="admin-nav" onclick="go('payments',this)"><span class="ico">💳</span>Quote</button>
@@ -308,6 +308,44 @@ let expenses = [];
 let currentProfile = null;
 let currentSession = null;
 
+
+
+function rebuildLoginFields(){
+  const wrap=byId('loginFields');
+  if(!wrap) return;
+
+  const stamp=Date.now();
+  wrap.innerHTML=`
+    <div class="field">
+      <label>Email</label>
+      <input id="loginEmail" name="email_${stamp}" type="email"
+        autocomplete="off" autocapitalize="none" spellcheck="false" readonly>
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <div class="password-wrap">
+        <input id="loginPassword" name="password_${stamp}" type="password"
+          autocomplete="new-password" readonly>
+        <button type="button" class="password-toggle"
+          onclick="togglePassword('loginPassword',this)"
+          aria-label="Mostra password" title="Mostra password">👁️</button>
+      </div>
+    </div>`;
+
+  const unlock = input => {
+    const fn=()=>{
+      input.removeAttribute('readonly');
+      input.value='';
+      input.removeEventListener('focus',fn);
+      input.removeEventListener('pointerdown',fn);
+    };
+    input.addEventListener('focus',fn);
+    input.addEventListener('pointerdown',fn);
+  };
+
+  unlock(byId('loginEmail'));
+  unlock(byId('loginPassword'));
+}
 
 function togglePassword(inputId,btn){
   const input=byId(inputId);
@@ -363,16 +401,21 @@ function showLogin(message=''){
   document.body.classList.add('login-mode');
 
   const nav=document.querySelector('nav');
-  if(nav) nav.classList.add('hidden');
+  if(nav){
+    nav.classList.add('hidden');
+    nav.style.display='none';
+  }
 
   byId('loginScreen').classList.remove('hidden');
   byId('recoveryScreen').classList.add('hidden');
   byId('mainApp').classList.add('hidden');
 
-  clearLoginFields();
-  setTimeout(clearLoginFields,50);
-  setTimeout(clearLoginFields,250);
-  setTimeout(clearLoginFields,700);
+  rebuildLoginFields();
+
+  // Dopo il render, ricreiamo ancora una volta i campi:
+  // così eventuale autofill del browser viene eliminato.
+  setTimeout(rebuildLoginFields,120);
+  setTimeout(rebuildLoginFields,600);
 
   byId('loginError').style.display='none';
   byId('loginError').textContent='';
@@ -386,7 +429,10 @@ function showApp(){
   document.body.classList.remove('login-mode');
 
   const nav=document.querySelector('nav');
-  if(nav) nav.classList.remove('hidden');
+  if(nav){
+    nav.classList.remove('hidden');
+    nav.style.display='';
+  }
 
   byId('loginScreen').classList.add('hidden');
   byId('recoveryScreen').classList.add('hidden');
@@ -585,10 +631,6 @@ async function logout(){
     payments=[];
     expenses=[];
 
-    const form=byId('loginForm');
-    if(form) form.reset();
-
-    clearLoginFields();
     showLogin();
   }
 }
