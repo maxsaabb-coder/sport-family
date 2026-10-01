@@ -99,6 +99,11 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
 }
 .doc-row .doc-open{flex:0 0 auto}
 
+.doc-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
+.btn.danger{background:#fff;color:#a12835;border:1px solid #e5b8bf}
+.btn.danger:hover{background:#fff3f5}
+
+
 
 @media(max-width:650px){.grid{grid-template-columns:1fr}.totalbox{grid-template-columns:1fr} h1{font-size:25px}.app{padding-top:12px}}
 </style>
@@ -825,6 +830,39 @@ function cleanDocDisplayName(name){
   return s || 'Documento PDF';
 }
 
+
+async function deleteReceipt(path){
+  if(currentProfile?.ruolo!=='admin') return;
+
+  const nome=cleanDocDisplayName(path.split('/').pop());
+  const ok=confirm(`Vuoi eliminare definitivamente questo PDF?\n\n${nome}`);
+  if(!ok) return;
+
+  const {error}=await sb.storage.from('ricevute').remove([path]);
+  if(error){
+    alert('Non riesco a eliminare il PDF: '+error.message);
+    return;
+  }
+
+  // If this PDF is linked to a payment, clear the reference.
+  const pay=payments.find(p=>p.receipt===path);
+  if(pay){
+    await sb.from('pagamenti')
+      .update({ricevuta_url:null})
+      .eq('id',pay.id);
+  }
+
+  // If linked to an extra expense, clear that reference too.
+  const exp=expenses.find(x=>x.receipt===path);
+  if(exp){
+    await sb.from('spese_extra')
+      .update({ricevuta_url:null})
+      .eq('id',exp.id);
+  }
+
+  await loadData();
+}
+
 async function renderDocs(){
  const el=byId('docList');
  if(!el) return;
@@ -841,17 +879,22 @@ async function renderDocs(){
    return;
  }
 
+ const isAdmin=currentProfile?.ruolo==='admin';
+
  el.innerHTML=docs.map(d=>`
    <div class="row doc-row">
      <div class="doc-info">
        <div class="doc-title">${esc(d.person)} · ${esc(cleanDocDisplayName(d.name))}</div>
        <div class="row-meta">Documento PDF</div>
      </div>
-     <button class="btn small secondary doc-open"
-       onclick="openReceipt('${esc(d.path)}')">Apri PDF</button>
+     <div class="doc-actions">
+       <button class="btn small secondary doc-open"
+         onclick="openReceipt('${esc(d.path)}')">Apri PDF</button>
+       ${isAdmin ? `<button class="btn small danger"
+         onclick="deleteReceipt('${esc(d.path)}')">Elimina</button>` : ''}
+     </div>
    </div>`).join('');
 }
-
 async function renderAll(){
  renderPayments(); renderExpenses(); renderTotals(); await renderDocs();
 }
