@@ -88,6 +88,18 @@ nav.child-nav{grid-template-columns:repeat(2,1fr)}
 .loading{opacity:.55;pointer-events:none}
 .receipt-btn{margin-top:7px}
 
+.doc-row{display:flex;align-items:center;gap:14px}
+.doc-row .doc-info{min-width:0;flex:1}
+.doc-row .doc-title{
+  font-weight:800;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  max-width:100%;
+}
+.doc-row .doc-open{flex:0 0 auto}
+
+
 @media(max-width:650px){.grid{grid-template-columns:1fr}.totalbox{grid-template-columns:1fr} h1{font-size:25px}.app{padding-top:12px}}
 </style>
 </head>
@@ -676,8 +688,18 @@ function safeName(name){
 }
 async function uploadReceipt(file,person,label='documento'){
  if(!file) return '';
- const path=`${person}/${Date.now()}_${safeName(label)}_${safeName(file.name)}`;
- const {error}=await sb.storage.from('ricevute').upload(path,file,{upsert:false,contentType:'application/pdf'});
+
+ const cleanLabel=safeName(label)
+   .replace(/\.pdf$/i,'')
+   .replace(/_+/g,'_')
+   .replace(/^_+|_+$/g,'');
+
+ const path=`${person}/${Date.now()}_${cleanLabel || 'documento'}.pdf`;
+
+ const {error}=await sb.storage
+   .from('ricevute')
+   .upload(path,file,{upsert:false,contentType:'application/pdf'});
+
  if(error) throw error;
  return path;
 }
@@ -718,7 +740,9 @@ byId('form').addEventListener('submit',async e=>{
    }
    if(type==='document'){
      const file=byId('file').files[0];
-     const label=(byId('category').value+'_'+(byId('desc').value||file.name));
+     const originalBase=(file?.name||'documento.pdf').replace(/\.pdf$/i,'');
+     const titolo=(byId('desc').value||originalBase).trim();
+     const label=(byId('category').value+'_'+titolo);
      await uploadReceipt(file,person,label);
    }
    closeModal();
@@ -778,15 +802,54 @@ async function listFolder(person){
  if(error) return [];
  return (data||[]).filter(f=>f.name && f.name!=='.emptyFolderPlaceholder').map(f=>({person,name:f.name,path:`${person}/${f.name}`}));
 }
+
+function cleanDocDisplayName(name){
+  let s=String(name||'documento.pdf');
+
+  // remove timestamp prefix
+  s=s.replace(/^\d+_/,'');
+  s=s.replace(/\.pdf$/i,'');
+
+  // Some earlier uploads duplicated the original filename.
+  // If a long repeated block exists, keep only the first occurrence.
+  if(s.length>90){
+    const half=Math.floor(s.length/2);
+    const first=s.slice(0,half);
+    const probe=first.slice(Math.max(0,first.length-28));
+    const pos=s.indexOf(probe, half-10);
+    if(pos>30) s=s.slice(0,pos);
+  }
+
+  s=s.replace(/_+/g,' ').trim();
+  if(s.length>72) s=s.slice(0,69)+'…';
+  return s || 'Documento PDF';
+}
+
 async function renderDocs(){
  const el=byId('docList');
  if(!el) return;
- const people=currentProfile?.ruolo==='admin'?['Anna','Aleksandro']:[currentProfile?.ragazzo].filter(Boolean);
+
+ const people=currentProfile?.ruolo==='admin'
+   ? ['Anna','Aleksandro']
+   : [currentProfile?.ragazzo].filter(Boolean);
+
  const groups=await Promise.all(people.map(listFolder));
  const docs=groups.flat();
- if(!docs.length){el.innerHTML='<div class="empty card">Nessun PDF archiviato.</div>';return;}
- el.innerHTML=docs.map(d=>`<div class="row"><div><div class="row-title">${esc(d.person)} · ${esc(d.name)}</div>
- <div class="row-meta">Supabase Storage</div></div><button class="btn small secondary" onclick="openReceipt('${esc(d.path)}')">Apri PDF</button></div>`).join('');
+
+ if(!docs.length){
+   el.innerHTML='<div class="empty card">Nessun PDF archiviato.</div>';
+   return;
+ }
+
+ el.innerHTML=docs.map(d=>`
+   <div class="row doc-row">
+     <div class="doc-info">
+       <div class="doc-title">${esc(d.person)} · ${esc(cleanDocDisplayName(d.name))}</div>
+       <div class="row-meta">Documento PDF</div>
+     </div>
+     <button class="btn small secondary doc-open"
+       onclick="openReceipt('${esc(d.path)}')">Apri PDF</button>
+   </div>`).join('');
 }
 
 async function renderAll(){
